@@ -5,7 +5,7 @@
 
 <div style="text-align: center;">
     <img src="assets/SFL.png" alt="Overview of the Stretching Features and Labels (SFL) framework for improving molecular OOD gener-
-alization" width="1000"/>
+alization" width="800"/>
 </div>
 
 
