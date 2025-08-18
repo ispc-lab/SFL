@@ -91,7 +91,7 @@ def build_argparse():
     parser.add_argument("--use_SFL", default=0, type=int)
     parser.add_argument("--note", default=None, type=str)
     parser.add_argument('--arch_type', default='atom3d_gnn', type=str,
-                            help="dimenet++, schnet, egnn, visnet, frad, frad_pretrain, atom3d_gnn, atom3d_cnn3d")
+                            help="deepdta, moltrans, atom3d_cnn3d, atom3d_gnn, comenet, visnet")
     parser.add_argument('--dataset', default='LBA_30', type=str,
                             help="LBA_30, LBA_60")
     parser.add_argument('--save_dir', default='./ckpt_lba/base', type=str)

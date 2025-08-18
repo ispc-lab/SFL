@@ -190,7 +190,7 @@ def build_argparse():
     parser.add_argument("--use_SFL", default=1, type=int)
     parser.add_argument("--note", default=None, type=str)
     parser.add_argument('--arch_type', default='visnet', type=str,
-                        help="schnet, egnn, visnet, atom3d_gnn, atom3d_cnn3d")
+                        help="deepdta, moltrans, atom3d_cnn3d, atom3d_gnn, comenet, visnet")
     parser.add_argument('--dataset', default='LBA_30', type=str)
     parser.add_argument('--save_dir', default='./ckpt_test', type=str)
     parser.add_argument('--seed', default=2025, type=int)

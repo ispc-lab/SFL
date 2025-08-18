@@ -211,11 +211,11 @@ def build_argparse():
     parser = argparse.ArgumentParser()
     parser.add_argument("--use_SFL", default=1, type=int)
     parser.add_argument("--note", default=None, type=str)
-    parser.add_argument('--arch_type', default='dimenet++', type=str,
-                        help="unimol, unimol2_84M, schnet, egnn, dimenet++, visnet, attentive_fp")
-    parser.add_argument('--dataset', default='lipo', type=str,
-                            help="esol, freesolv, lipo, qm7")
-    parser.add_argument('--save_dir', default='./ckpt/SFL', type=str)
+    parser.add_argument('--arch_type', default='unimol', type=str,
+                            help="attentive_fp, schnet, egnn, dimenet++, visnet, gem, unimol, unimol2_84M")
+    parser.add_argument('--dataset', default='esol', type=str,
+                            help="esol, freesolv, lipo, qm7, qm9_homo, qm9_lumo, qm9_gap")
+    parser.add_argument('--save_dir', default='./ckpt_MP/SFL', type=str)
     parser.add_argument('--seed', default=2025, type=int)
     parser.add_argument('--num_workers', default=7, type=int)
     parser.add_argument('--device', default='cuda:0', type=str)
