@@ -3,6 +3,12 @@
 ## Overview
 **Stretching Features and Labels (SFL)** is a general-purpose, architecture-agnostic training strategy designed to improve OOD generalization across molecular modeling tasks. SFL generates pseudo-OOD samples by extrapolating latent molecular representations and proportionally adjusting associated property labels along semantically meaningful directions, thereby expanding both structural and property coverage without violating chemical validity. It integrates seamlessly into existing pipelines for graph-based, transformer-based, and other architectures, with minimal computational overhead.
 
+<div style="text-align: center;">
+    <img src="assets/SFL.png" alt="Overview of the Stretching Features and Labels (SFL) framework for improving molecular OOD gener-
+alization" width="500"/>
+</div>
+
+
 ## News
 ### December 2024
 🏆 **Championship Award**: SFL achieved 1st place (out of 226 teams) in [The Second Global AI Drug Development Algorithm Competition](https://aistudio.baidu.com/competition/detail/1214/0/leaderboard)!
