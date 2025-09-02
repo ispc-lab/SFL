@@ -104,7 +104,7 @@ All models report:
 SFL-enhanced models additionally provide separate **in-distribution (ID)** and **out-of-distribution (OOD)** evaluations.
 
 
-## Citatioin
+## Citation
 Current our paper is under submission, if you find our code helpful, please cite 
 
 ```bibtex
