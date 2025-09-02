@@ -1,7 +1,28 @@
-# Stretching the Limits: A Generalizable Strategy for Out-of-Distribution Molecular Property Prediction
+# Stretching chemical boundaries for robust out-of-distribution molecular representation learning
 
-## Overview
-**Stretching Features and Labels (SFL)** is a general-purpose, architecture-agnostic training strategy designed to improve OOD generalization across molecular modeling tasks. SFL generates pseudo-OOD samples by extrapolating latent molecular representations and proportionally adjusting associated property labels along semantically meaningful directions, thereby expanding both structural and property coverage without violating chemical validity. It integrates seamlessly into existing pipelines for graph-based, transformer-based, and other architectures, with minimal computational overhead.
+## Milestones 
+
+2025-08 ✨ **Supporting Diverse Applications:**
+We extended the SFL to a range of molecular machine learning tasks, including molecular property prediction, protein–ligand binding affinity estimation, and protein–protein interaction prediction. SFL also supports additional applications such as de novo molecular screening, lead optimization, and activity cliff prediction.
+
+2024-12 🏆 **Championship Award**: SFL achieved first place (ranked 1st among 226 teams) in [The Second Global AI Drug Development Algorithm Competition](https://aistudio.baidu.com/competition/detail/1214/0/leaderboard)!
+
+
+## Introduction
+Despite recent advances achieved by pretraining, existing molecular learning methods still struggle to generalize beyond the boundaries of the training distribution. Recent efforts to address this challenge have primarily focused on developing invariant or equivariant representations, or on applying input-level data augmentation to expand molecular contexts. However, several unresolved issues remain:
+
+1. Invariant and equivariant models are typically architecture-specific and struggle to generalize across tasks. Their limitations are particularly evident in the presence of activity cliffs, where structurally similar compounds exhibit divergent behaviors.
+
+2.  Common data augmentation methods, such as atom masking, bond deletion, or subgraph removal, frequently compromise chemical validity. Moreover, assigning reliable property labels to such augmented molecules is inherently difficult due to complex physicochemical constraints.
+
+3. A largely unaddressed issue is the limited extrapolation ability of current models to molecular properties beyond the training range. This significantly impedes the identification of compounds with novel pharmacological effects.
+ 
+SFL is designed to overcome these limitations by expanding the coverage of the training distribution in a semantically coherent manner. Rather than manipulating molecular inputs directly, SFL performs extrapolation in the latent feature space. By generating pseudo–out-of-distribution samples through semantic extrapolation of molecular embeddings, and proportionally adjusting the associated property labels, SFL broadens both structural and property coverage. This augmentation strategy avoids compromising chemical validity and allows for consistent label assignment.
+SFL integrates seamlessly into existing pipelines for graph-based, transformer-based, and other architectures, with minimal computational overhead.
+
+<!-- ## Overview -->
+<!-- **Stretching Features and Labels (SFL)** is a general-purpose, architecture-agnostic training strategy designed to improve OOD generalization across molecular modeling tasks. SFL generates pseudo-OOD samples by extrapolating latent molecular representations and proportionally adjusting associated property labels along semantically meaningful directions, thereby expanding both structural and property coverage without violating chemical validity. It integrates seamlessly into existing pipelines for graph-based, transformer-based, and other architectures, with minimal computational overhead. -->
+## Framework
 
 <div style="text-align: center;">
     <img src="assets/SFL.png" alt="Overview of the Stretching Features and Labels (SFL) framework for improving molecular OOD gener-
@@ -9,9 +30,6 @@ alization" width="800"/>
 </div>
 
 
-## News
-### December 2024
-🏆 **Championship Award**: SFL achieved 1st place (out of 226 teams) in [The Second Global AI Drug Development Algorithm Competition](https://aistudio.baidu.com/competition/detail/1214/0/leaderboard)!
 
 
 ## Getting Started
@@ -84,3 +102,19 @@ All models report:
 - **R²** (Coefficient of Determination)
 
 SFL-enhanced models additionally provide separate **in-distribution (ID)** and **out-of-distribution (OOD)** evaluations.
+
+
+## Citatioin
+Current our paper is under submission, if you find our code helpful, please cite 
+
+```bibtex
+@misc{SFL2025,
+title ={Stretching chemical boundaries for robust out-of-distribution molecular representation learning},
+author = {Qu, Sanqing and Zhang, Xudong and  Lu, Fan and Tang, Ruohui and Sun, Jianfeng and Wang, Jianming and Chen, 
+Jieneng and Zhang, Yanping and Knoll, Alois and Gao, Shaorong and Changjun, Jiang and Chen, Guang},
+year = {2025},
+publisher = {GitHub},
+journal = {GitHub repository},
+howpublished = {\url{https://github.com/ispc-lab/SFL}},
+}
+```
