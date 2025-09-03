@@ -1,4 +1,4 @@
-# Stretching chemical boundaries for robust out-of-distribution molecular representation learning
+# Stretching the boundaries of structure and property coverage for out-of-distribution molecular representation learning
 
 ## Introduction
 Despite recent advances achieved by pretraining, existing molecular learning methods still struggle to generalize beyond the boundaries of the training distribution. Recent efforts to address this challenge have primarily focused on developing invariant or equivariant representations, or on applying input-level data augmentation to expand molecular contexts. However, several unresolved issues remain:
@@ -13,11 +13,9 @@ To address these challenges, we introduce Stretching Features and Labels (SFL), 
 
 ## Milestone
 
-2025-08 ✨ **Supporting Diverse Applications:**
-We extended the SFL to a range of molecular machine learning tasks, including molecular property prediction, protein–ligand binding affinity estimation, and protein–protein interaction prediction. SFL also supports additional applications such as de novo molecular screening, lead optimization, and activity cliff prediction.
+2025-08 ✨ **Supporting Diverse Applications:** We extended the SFL to a range of molecular machine learning tasks, including molecular property prediction, protein–ligand binding affinity estimation, and protein–protein interaction prediction. SFL also supports additional applications such as de novo molecular screening, lead optimization, and activity cliff prediction.
 
 2024-12 🏆 **Championship Award**: SFL achieved first place (ranked 1st among 226 teams) in [The Second Global AI Drug Development Algorithm Competition](https://aistudio.baidu.com/competition/detail/1214/0/leaderboard)!
-
 
 <!-- ## Overview -->
 <!-- **Stretching Features and Labels (SFL)** is a general-purpose, architecture-agnostic training strategy designed to improve OOD generalization across molecular modeling tasks. SFL generates pseudo-OOD samples by extrapolating latent molecular representations and proportionally adjusting associated property labels along semantically meaningful directions, thereby expanding both structural and property coverage without violating chemical validity. It integrates seamlessly into existing pipelines for graph-based, transformer-based, and other architectures, with minimal computational overhead. -->
