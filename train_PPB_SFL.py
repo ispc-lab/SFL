@@ -86,9 +86,9 @@ def train(args):
             loss_yood_1 = F.mse_loss(yood_mid_output_mix_1, yood_mid_label_mix_1)
             loss_yood_2 = F.mse_loss(yood_mid_output_mix_2, yood_mid_label_mix_2)
 
-            loss_pood = args.lam_yood * loss_yood_1 + args.lam_xood * loss_yood_2 
-            loss_sood = loss_id + args.lam_mixup * loss_mixup
-            loss = (1 - args.lam_id) * loss_pood + args.lam_id * loss_sood
+            loss_yood = args.lam_yood * loss_yood_1 + args.lam_xood * loss_yood_2 
+            loss = args.lam_id * loss_id + args.lam_mixup * loss_mixup + args.lam_yood * loss_yood
+            
             loss.backward()
             optimizer.step()
             optimizer.zero_grad()
