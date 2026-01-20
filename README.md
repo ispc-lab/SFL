@@ -106,11 +106,11 @@ SFL-enhanced models additionally provide separate **in-distribution (ID)** and *
 Our paper is under review, if you find our code helpful, please cite 
 
 ```bibtex
-@misc{SFL2025,
-title ={Stretching chemical boundaries for robust out-of-distribution molecular representation learning},
+@misc{SFL2026,
+title ={Stretch to Generalize in Molecular Representation Learning with SFL},
 author = {Qu, Sanqing and Zhang, Xudong and  Lu, Fan and Tang, Ruohui and Sun, Jianfeng and Wang, Jianming and Chen, 
 Jieneng and Zhang, Yanping and Knoll, Alois and Gao, Shaorong and Changjun, Jiang and Chen, Guang},
-year = {2025},
+year = {2026},
 publisher = {GitHub},
 journal = {GitHub repository},
 howpublished = {\url{https://github.com/ispc-lab/SFL}},
