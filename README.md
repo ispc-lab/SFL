@@ -47,7 +47,7 @@ python train_MP.py --use_SFL 0 --arch_type unimol --dataset esol \
 ```
 *Datasets*: `esol`, `freesolv`, `lipo`, `qm7`, `qm9_homo`, `qm9_lumo`, `qm9_gap`  
 *Models*: `attentive_fp`, `schnet`, `egnn`, `dimenet++`, `visnet`, `gem`, `unimol`, `unimol2_84M`
-*Pre-trained Checkpoints*: This is a sample script using [Uni-Mol](https://github.com/deepmodeling/Uni-Mol/blob/main/unimol/README.md). You need to download the pre-trained checkpoint and place it in the `xxxx` directory.
+*Pre-trained Checkpoints*: This is a sample script using [Uni-Mol](https://github.com/deepmodeling/Uni-Mol/blob/main/unimol/README.md). You need to download the pre-trained checkpoint and place it in the `weight` directory.
 
 **Protein-Ligand Binding Affinity Prediction**:
 ```bash
