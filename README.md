@@ -1,4 +1,4 @@
-# Stretching the boundaries of structure and property coverage for out-of-distribution molecular representation learning
+# Stretch to Generalize in Molecular Representation Learning with SFL
 
 ## Introduction
 Despite recent advances achieved by pretraining, existing molecular learning methods still struggle to generalize beyond the boundaries of the training distribution. Recent efforts to address this challenge have primarily focused on developing invariant or equivariant representations, or on applying input-level data augmentation to expand molecular contexts. However, several unresolved issues remain:
@@ -12,6 +12,8 @@ Despite recent advances achieved by pretraining, existing molecular learning met
 To address these challenges, we introduce Stretching Features and Labels (SFL), a general-purpose and architecture-agnostic training strategy designed to improve generalization under both structural and property distribution shifts. SFL is designed to overcome these limitations by expanding the coverage of the training distribution in a semantically coherent manner. Rather than manipulating molecular inputs directly, SFL performs extrapolation in the latent feature space. By generating pseudo–out-of-distribution samples through semantic extrapolation of molecular embeddings, and proportionally adjusting the associated property labels, SFL broadens both structural and property coverage. This augmentation strategy avoids compromising chemical validity and allows for consistent label assignment. SFL integrates seamlessly into existing pipelines for graph-based, transformer-based, and other architectures, with minimal computational overhead.
 
 ## Milestone
+
+2026-01 🚩 **Release Example Scripts to Support LBA and PPB Prediction:** We will release complete training scripts for molecular property prediction, protein–ligand binding affinity estimation, and protein–protein interaction prediction upon paper acceptance.
 
 2025-08 ✨ **Supporting Diverse Applications:** We extended the SFL to a range of molecular machine learning tasks, including molecular property prediction, protein–ligand binding affinity estimation, and protein–protein interaction prediction. SFL also supports additional applications such as de novo molecular screening, lead optimization, and activity cliff prediction.
 
@@ -27,8 +29,6 @@ alization" width="800"/>
 </div>
 
 
-
-
 ## Getting Started
 
 ### Environment Setup
@@ -39,7 +39,7 @@ conda activate SFL
 ```
 
 ### Model Training
-#### Base Models
+#### Baseline Models Training
 **Molecular Property Prediction**:
 ```bash
 python train_MP.py --use_SFL 0 --arch_type unimol --dataset esol \
@@ -47,6 +47,7 @@ python train_MP.py --use_SFL 0 --arch_type unimol --dataset esol \
 ```
 *Datasets*: `esol`, `freesolv`, `lipo`, `qm7`, `qm9_homo`, `qm9_lumo`, `qm9_gap`  
 *Models*: `attentive_fp`, `schnet`, `egnn`, `dimenet++`, `visnet`, `gem`, `unimol`, `unimol2_84M`
+*Pre-trained Checkpoints*: This is a sample script using [Uni-Mol](https://github.com/deepmodeling/Uni-Mol/blob/main/unimol/README.md). You need to download the pre-trained checkpoint and place it in the `xxxx` directory.
 
 **Protein-Ligand Binding Affinity Prediction**:
 ```bash
@@ -64,7 +65,7 @@ python train_PPB.py --use_SFL 0 --arch_type dg_model --dataset PPB \
 *Datasets*: `PPB`  
 *Models*: `dg_model`
 
-#### Models with SFL
+#### Baseline Models boosted by SFL
 **Molecular Property Prediction**:
 ```bash
 python train_MP_SFL.py --use_SFL 1 --arch_type unimol --dataset esol \
