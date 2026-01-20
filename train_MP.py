@@ -109,12 +109,12 @@ def build_argparse():
                             help="attentive_fp, schnet, egnn, dimenet++, visnet, gem, unimol, unimol2_84M")
     parser.add_argument('--dataset', default='esol', type=str,
                             help="esol, freesolv, lipo, qm7, qm9_homo, qm9_lumo, qm9_gap")
-    parser.add_argument('--save_dir', default='./ckpt_MP/base', type=str)
+    parser.add_argument('--save_dir', default='./ckpt/base', type=str)
     parser.add_argument('--seed', default=2025, type=int)
-    parser.add_argument('--device', default='cuda:0', type=str)
+    parser.add_argument('--device', default='cuda:2', type=str)
     parser.add_argument('--num_workers', default=7, type=int)
     
-    parser.add_argument('--batch_size', default=256, type=int)
+    parser.add_argument('--batch_size', default=16, type=int)
     parser.add_argument('--tmax', default=15, type=int)
     parser.add_argument('--weight_decay', default=1e-5, type=float)
     parser.add_argument("--max_bearable_epoch", type=int, default=50)

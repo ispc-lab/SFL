@@ -16,8 +16,10 @@ from utils.train import set_logger, set_seed
 def train(args):
 
     model = args.model
+
     optimizer = Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
     lr_scheduler = CosineAnnealingLR(optimizer, T_max=args.tmax)
+ 
 
     train_data_loader, valid_data_loader = get_data_loader(args=args, mode='train')  
     best_score = 1e9
@@ -36,20 +38,18 @@ def train(args):
             protein_simi_mat = batch['protein_simi_mat']
             tanimoto_morgan_simi_mat = batch['tanimoto_morgan_simi_mat']
             
-            label_dist_mat = torch.abs(label_true - label_true.t()) / 8.0
+            label_dist_mat = torch.abs(label_true - label_true.t()) / 10.0
             
             fuse_simi_mat = torch.pow((1.0 - label_dist_mat) * (1.0 - protein_simi_mat) * (1.0 - tanimoto_morgan_simi_mat), 1.0/3.0)
             simi_mol_idx = torch.argsort(fuse_simi_mat, dim=1, descending=True)[:, 0]
 
             output, output_feat = model(batch)
 
-            n_size, feat_size = output_feat.shape
+            n_size, _ = output_feat.shape
 
-            # mixup
             lam = torch.distributions.Beta(0.5, 0.5).sample().item()
             lam = torch.tensor(lam, dtype=output_feat.dtype, device=output_feat.device)
             index = torch.randperm(n_size).to(output_feat.device)
-
             mixed_feat = lam * output_feat + (1 - lam) * output_feat[index, :]
             mixed_gt_label = lam * label_true + (1 - lam) * label_true[index]
             mixed_output = model.mlp(mixed_feat)
@@ -57,19 +57,16 @@ def train(args):
 
             loss_id = F.mse_loss(output, label_true)
 
+
             mid_feat_avg = torch.mean(output_feat, dim=0)
             mid_label_avg = torch.mean(label_true, dim=0)
-        
             xood_beta_distribution = torch.distributions.Beta(args.xood_beta_1, args.xood_beta_2)
             xood_lam_fuse = xood_beta_distribution.sample((n_size, 1)).to(args.device)
-
             xood_feat_mix = mid_feat_avg + xood_lam_fuse * (output_feat - mid_feat_avg) + (1.0 - xood_lam_fuse) * (output_feat[simi_mol_idx] - mid_feat_avg)
             xood_label_mix = mid_label_avg + xood_lam_fuse * (label_true - mid_label_avg) + (1.0 - xood_lam_fuse) * (label_true[simi_mol_idx] - mid_label_avg)
             #-----------------------------------------------------------------------#
             mid_feat_dist_1 = output_feat - mid_feat_avg
             mid_label_dist_1 = label_true - mid_label_avg
-            # pseudo-YOOD data
-            # yood_beta_distribution = torch.distributions.Beta(5.0, 2.0)
             yood_beta_distribution = torch.distributions.Beta(args.yood_beta_1, args.yood_beta_2)
             yood_lam_fuse_1 = yood_beta_distribution.sample((n_size, 1)).to(args.device)
             yood_mid_feat_mix_1 = output_feat + yood_lam_fuse_1 * mid_feat_dist_1
@@ -89,9 +86,9 @@ def train(args):
             loss_yood_1 = F.mse_loss(yood_mid_output_mix_1, yood_mid_label_mix_1)
             loss_yood_2 = F.mse_loss(yood_mid_output_mix_2, yood_mid_label_mix_2)
 
-            loss_yood = args.lam_yood * loss_yood_1 + args.lam_xood * loss_yood_2 
-            loss = args.lam_id * loss_id + args.lam_mixup * loss_mixup + args.lam_yood * loss_yood
-            
+            loss_pood = args.lam_yood * loss_yood_1 + args.lam_xood * loss_yood_2 
+            loss_sood = loss_id + args.lam_mixup * loss_mixup
+            loss = (1 - args.lam_id) * loss_pood + args.lam_id * loss_sood
             loss.backward()
             optimizer.step()
             optimizer.zero_grad()
@@ -116,7 +113,6 @@ def train(args):
                 args.logger.info(f"model_{args.runnername} is Done!!")
                 args.logger.info('valid')
                 args.logger.info(f'current_best_score: {best_score:.4f}, best_epoch: {best_epoch}')
-                torch.save(model.state_dict(), os.path.join(args.save_dir, "last_model.pt"))
                 break
         else:
             args.logger.info(f'current_best_score: {best_score:.4f}, best_epoch: {best_epoch}')
@@ -143,6 +139,7 @@ def evaluate_withood(args, model, dataloader):
 
     all_output_feat = torch.cat(output_feat_list, dim=0)
     all_output_label = torch.cat(output_label_list, dim=0)
+
 
     mid_feat_avg = torch.mean(all_output_feat, dim=0)
     mid_label_avg = torch.mean(all_output_label, dim=0)
@@ -189,24 +186,23 @@ def build_argparse():
     parser = argparse.ArgumentParser()
     parser.add_argument("--use_SFL", default=1, type=int)
     parser.add_argument("--note", default=None, type=str)
-    parser.add_argument('--arch_type', default='visnet', type=str,
-                        help="deepdta, moltrans, atom3d_cnn3d, atom3d_gnn, comenet, visnet")
+    parser.add_argument('--arch_type', default='comenet', type=str,
+                        help="visnet, atom3d_cnn3d, atom3d_gnn, deepdta, moltrans, comenet")
     parser.add_argument('--dataset', default='LBA_30', type=str)
-    parser.add_argument('--save_dir', default='./ckpt_test', type=str)
+    parser.add_argument('--save_dir', default='./ckpt_LBA/SFL/', type=str)
     parser.add_argument('--seed', default=2025, type=int)
     parser.add_argument('--num_workers', default=7, type=int)
-    parser.add_argument('--device', default='cuda:1', type=str)
+    parser.add_argument('--device', default='cuda:2', type=str)
     parser.add_argument('--batch_size', default=16, type=int)
     parser.add_argument('--tmax', default=15, type=int)
     parser.add_argument('--weight_decay', default=1e-5, type=float)
     parser.add_argument("--max_bearable_epoch", type=int, default=50)
 
-    parser.add_argument("--lam_xood", type=float, default=0.5)  # 0.5
-    parser.add_argument("--lam_yood", type=float, default=0.5)
-    parser.add_argument("--lam_mixup", type=float, default=1.0)
-    parser.add_argument("--lam_id", type=float, default=1.0)
-
-    parser.add_argument("--lam_label_mix", type=float, default=0.5)   # 0.5
+    parser.add_argument("--lam_xood", type=float, default=0.25)  
+    parser.add_argument("--lam_yood", type=float, default=0.75)
+    parser.add_argument("--lam_mixup", type=float, default=0.75)
+    parser.add_argument("--lam_id", type=float, default=0.75)
+    parser.add_argument("--lam_label_mix", type=float, default=0.5)   
 
     parser.add_argument("--xood_beta_1", type=float, default=0.5)
     parser.add_argument("--xood_beta_2", type=float, default=0.5)

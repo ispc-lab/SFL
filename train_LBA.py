@@ -9,9 +9,9 @@ import numpy as np
 import os
 import argparse
 import shutil
-from utils_generation_chemical_LBA.load_utils import load_data, load_model
-from utils_generation_chemical_LBA.dataloader import get_data_loader
-from utils_generation_chemical_LBA.train import set_logger, set_seed
+from utils.load_utils import load_data, load_model
+from utils.dataloader import get_data_loader
+from utils.train import set_logger, set_seed
 import torch.nn as nn
 
 
@@ -90,13 +90,13 @@ def build_argparse():
     parser = argparse.ArgumentParser()
     parser.add_argument("--use_SFL", default=0, type=int)
     parser.add_argument("--note", default=None, type=str)
-    parser.add_argument('--arch_type', default='atom3d_gnn', type=str,
+    parser.add_argument('--arch_type', default='comenet', type=str,
                             help="deepdta, moltrans, atom3d_cnn3d, atom3d_gnn, comenet, visnet")
     parser.add_argument('--dataset', default='LBA_30', type=str,
                             help="LBA_30, LBA_60")
-    parser.add_argument('--save_dir', default='./ckpt_lba/base', type=str)
+    parser.add_argument('--save_dir', default='./ckpt_LBA/base', type=str)
     parser.add_argument('--seed', default=2025, type=int)
-    parser.add_argument('--device', default='cuda:3', type=str)
+    parser.add_argument('--device', default='cuda:2', type=str)
     parser.add_argument('--num_workers', default=7, type=int)
     
     parser.add_argument('--batch_size', default=16, type=int)

@@ -13,13 +13,13 @@ from utils.load_utils import load_data, load_model
 from utils.dataloader import get_data_loader
 from utils.train import set_logger, set_seed
 
-def train(args):
 
+def train(args):
     model = args.model
 
     optimizer = Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
     lr_scheduler = CosineAnnealingLR(optimizer, T_max=args.tmax)
-
+ 
     train_data_loader, valid_data_loader = get_data_loader(args, mode='train')  
     best_score = 1e9
     best_epoch = 0
@@ -30,24 +30,24 @@ def train(args):
     for epoch in tqdm(range(args.max_epoch)):
         model.train()
         for batch in tqdm(train_data_loader):
-            inputs = {}
-            for k, v in batch.items():
-                if k not in  ['smi']:
-                    inputs[k] = v.to(args.device)
+            batch = {k: v.to(args.device) for k, v in batch.items()}
+ 
+            label_true = batch['label'].unsqueeze(1)
 
-            label_true = inputs['label'].unsqueeze(1)
+            tanimoto_morgan_simi_mat = batch['tanimoto_morgan_simi_mat']
 
-            tanimoto_morgan_simi_mat = inputs['tanimoto_morgan_simi_mat']
             label_dist_mat = torch.abs(label_true - label_true.t()) / 3.0
       
             fuse_simi_mat = torch.pow((1.0 - label_dist_mat) * (1.0 - tanimoto_morgan_simi_mat), 1.0 / 2.0)
          
             simi_mol_idx = torch.argsort(fuse_simi_mat, dim=1, descending=True)[:, 0]
-            output, output_feat = model(inputs)
-        
-            n_size, feat_size = output_feat.shape
 
-            lam = torch.distributions.Beta(0.5, 0.5).sample((n_size, 1)).to(args.device)
+            output, output_feat = model(batch)
+        
+            n_size, _ = output_feat.shape
+
+            lam = torch.distributions.Beta(0.5, 0.5).sample().item()
+            lam = torch.tensor(lam, dtype=output_feat.dtype, device=output_feat.device)
             index = torch.randperm(n_size).to(output_feat.device)
     
             mixed_feat = lam * output_feat + (1 - lam) * output_feat[index, :]
@@ -55,20 +55,17 @@ def train(args):
             mixed_output = model.mlp(mixed_feat)
             loss_mixup = F.mse_loss(mixed_output, mixed_gt_label)
 
-            # id
             loss_id = F.mse_loss(output, label_true)
 
             mid_feat_avg = torch.mean(output_feat, dim=0)
             mid_label_avg = torch.mean(label_true, dim=0)
             xood_beta_distribution = torch.distributions.Beta(args.xood_beta_1, args.xood_beta_2)
             xood_lam_fuse = xood_beta_distribution.sample((n_size, 1)).to(args.device)
-     
             xood_feat_mix = mid_feat_avg + xood_lam_fuse * (output_feat - mid_feat_avg) + (1.0 - xood_lam_fuse) * (output_feat[simi_mol_idx] - mid_feat_avg)
             xood_label_mix = mid_label_avg + xood_lam_fuse * (label_true - mid_label_avg) + (1.0 - xood_lam_fuse) * (label_true[simi_mol_idx] - mid_label_avg)
-            #-----------------------------------------------------------------------#
             mid_feat_dist_1 = output_feat - mid_feat_avg
             mid_label_dist_1 = label_true - mid_label_avg
-            # pseudo-YOOD data
+
             yood_beta_distribution = torch.distributions.Beta(args.yood_beta_1, args.yood_beta_2)
             yood_lam_fuse_1 = yood_beta_distribution.sample((n_size, 1)).to(args.device)
             yood_mid_feat_mix_1 = output_feat + yood_lam_fuse_1 * mid_feat_dist_1
@@ -88,8 +85,9 @@ def train(args):
             loss_yood_1 = F.mse_loss(yood_mid_output_mix_1, yood_mid_label_mix_1)
             loss_yood_2 = F.mse_loss(yood_mid_output_mix_2, yood_mid_label_mix_2)
 
-            loss_yood = args.lam_yood * loss_yood_1 + args.lam_xood * loss_yood_2 
-            loss = args.lam_id * loss_id + args.lam_mixup * loss_mixup + args.lam_yood * loss_yood
+            loss_pood = args.lam_yood * loss_yood_1 + args.lam_xood * loss_yood_2 
+            loss_sood = loss_id + args.lam_mixup * loss_mixup
+            loss = (1 - args.lam_id) * loss_pood + args.lam_id * loss_sood
       
             loss.backward()
             optimizer.step()
@@ -125,6 +123,7 @@ def train(args):
                 break
         else:
             args.logger.info(f'current_best_score: {best_score:.4f}, best_epoch: {best_epoch}')
+  
 
 def evaluate_withood(args, model, dataloader):
     model.eval()
@@ -137,13 +136,10 @@ def evaluate_withood(args, model, dataloader):
     SHIFT = 0.0
     label_mix_mod_weight_func = lambda x: 1.0 * args.lam_label_mix * x **2 + BIAS
     for batch in tqdm(dataloader):
-        inputs = {}
-        for k, v in batch.items():
-            if k not in  ['smi']:
-                inputs[k] = v.to(args.device)
-        compound_class = inputs['label']
+        batch = {k: v.to(args.device) for k, v in batch.items()}
+        compound_class = batch['label']
    
-        output, output_feat = model(inputs)
+        output, output_feat = model(batch)
 
         y_pred = np.concatenate((y_pred, output[:, 0].detach().cpu().numpy()))
         y_true = np.concatenate((y_true, compound_class.detach().cpu().numpy()))
@@ -211,24 +207,24 @@ def build_argparse():
     parser.add_argument("--use_SFL", default=1, type=int)
     parser.add_argument("--note", default=None, type=str)
     parser.add_argument('--arch_type', default='unimol', type=str,
-                            help="attentive_fp, schnet, egnn, dimenet++, visnet, gem, unimol, unimol2_84M")
-    parser.add_argument('--dataset', default='esol', type=str,
-                            help="esol, freesolv, lipo, qm7, qm9_homo, qm9_lumo, qm9_gap")
-    parser.add_argument('--save_dir', default='./ckpt_MP/SFL', type=str)
+                        help="unimol, unimol2_84M, schnet, egnn, dimenet++, visnet, attentive_fp")
+    parser.add_argument('--dataset', default='esol', type=str)
+    parser.add_argument('--save_dir', default='./ckpt/SFL', type=str)
     parser.add_argument('--seed', default=2025, type=int)
     parser.add_argument('--num_workers', default=7, type=int)
-    parser.add_argument('--device', default='cuda:0', type=str)
+    parser.add_argument('--device', default='cuda:2', type=str)
     parser.add_argument('--batch_size', default=16, type=int)
+    parser.add_argument('--lr', default=1e-4, type=float)
     parser.add_argument('--tmax', default=15, type=int)
     parser.add_argument('--weight_decay', default=1e-5, type=float)
+    parser.add_argument('--max_epoch', default=50, type=int)
     parser.add_argument("--max_bearable_epoch", type=int, default=50)
 
-    parser.add_argument("--lam_xood", type=float, default=1.0) 
-    parser.add_argument("--lam_yood", type=float, default=1.0)
-    parser.add_argument("--lam_id", type=float, default=1.0)
-    parser.add_argument("--lam_mixup", type=float, default=0.75)
-
-    parser.add_argument("--lam_label_mix", type=float, default=0.5)
+    parser.add_argument("--lam_xood", type=float, default=0.75) 
+    parser.add_argument("--lam_yood", type=float, default=0.25)
+    parser.add_argument("--lam_id", type=float, default=0.75)
+    parser.add_argument("--lam_mixup", type=float, default=0.5)
+    parser.add_argument("--lam_label_mix", type=float, default=0.5)   
 
     parser.add_argument("--xood_beta_1", type=float, default=0.5)
     parser.add_argument("--xood_beta_2", type=float, default=0.5)

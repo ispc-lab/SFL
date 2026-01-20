@@ -110,9 +110,9 @@ def build_argparse():
     parser.add_argument("--note", default=None, type=str)
     parser.add_argument('--arch_type', default='dg_model', type=str)
     parser.add_argument('--dataset', default='PPB', type=str)
-    parser.add_argument('--save_dir', default='./ckpt_PPB/test', type=str)
+    parser.add_argument('--save_dir', default='./ckpt_PPB/base', type=str)
     parser.add_argument('--seed', default=2025, type=int)
-    parser.add_argument('--device', default='cuda:3', type=str)
+    parser.add_argument('--device', default='cuda:2', type=str)
     parser.add_argument('--num_workers', default=4, type=int)
     
     parser.add_argument('--batch_size', default=16, type=int)

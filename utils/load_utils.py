@@ -4,7 +4,15 @@ import torch
 
 
 def load_model(args):
+    args.dictionary = None
     if args.arch_type == 'unimol2_84M':
+        args.pretrained_unimol_ckpt = './weight/unimol2_84M.pt'
+    elif args.arch_type == 'unimol':
+        from utils.arch_utils.unimol_utils import Dictionary
+        args.pretrained_unimol_ckpt = './weight/unimol.pt'
+        args.dictionary = Dictionary.load('./weight/mol_dict.txt')  
+  
+    if 'unimol2' in args.arch_type:
         from models.unimol.unimol_v2 import UniMol2Model
         args.lr = 1e-4
         args.max_epoch = 50
@@ -14,26 +22,106 @@ def load_model(args):
         args.model = PredModel(encoder, 768, num_classes=args.num_classes).to(args.device)
     
     elif args.arch_type == 'unimol':
-        from utils.arch_utils.unimol_utils import Dictionary
         from models.unimol.unimol import UniMolModel
-        args.pretrained_unimol_ckpt = './weight/unimol.pt'
-        args.dictionary = Dictionary.load('./weight/mol_dict.txt')  
         args.lr = 1e-4
         args.max_epoch = 50
         encoder = UniMolModel(args.dictionary).to(args.device)
         state_dict = torch.load(args.pretrained_unimol_ckpt, map_location=args.device)
         encoder.load_state_dict(state_dict['model'], strict=False)
         args.model = PredModel(encoder, 512, num_classes=args.num_classes).to(args.device)
-     
+   
+
+    elif args.arch_type == 'schnet':
+        from models.schnet import SchNet
+        args.lr = 1e-4
+        args.max_epoch = 500
+        encoder = SchNet(use_SFL=args.use_SFL).to(args.device)
         if args.use_SFL:
             args.model = PredModel(encoder, 128, num_classes=args.num_classes).to(args.device)
         else:
             args.model = encoder
- 
+
+    elif args.arch_type == 'comenet':
+        from models.comenet import ComENet
+        args.lr = 1e-4
+        args.max_epoch = 500
+        encoder = ComENet().to(args.device)
+        if args.use_SFL:
+            args.model = PredModel(encoder, 32, num_classes=args.num_classes).to(args.device)
+        else:
+            args.model = encoder
+
+    elif args.arch_type == 'egnn':
+        from models.egnn import EGNN
+        args.lr = 1e-4
+        args.max_epoch = 500
+        encoder = EGNN().to(args.device)
+        args.model = PredModel(encoder, 128, num_classes=args.num_classes).to(args.device)
+
+    elif args.arch_type == 'dimenet++':
+        from models.dimenet_plus_plus import DimeNetPlusPlus
+        args.lr = 1e-4
+        args.max_epoch = 500
+        encoder = DimeNetPlusPlus().to(args.device)
+        args.model = PredModel(encoder, 128, num_classes=args.num_classes).to(args.device)
+       
+    elif args.arch_type == 'visnet':
+        from models.visnet import ViSNet
+        args.lr = 1e-4
+        args.max_epoch = 300
+        encoder = ViSNet(args.use_SFL).to(args.device)
+        if args.use_SFL:
+            args.model = PredModel(encoder, 32, num_classes=args.num_classes).to(args.device)
+        else:
+            args.model = encoder
+
+    elif args.arch_type == 'attentive_fp':
+        from models.attentive_fp import AttentiveFP
+        args.lr = 1e-4
+        args.max_epoch = 500
+        encoder = AttentiveFP().to(args.device)
+        args.model = PredModel(encoder, 128, num_classes=args.num_classes).to(args.device)
+
+    elif args.arch_type == 'deepdta':
+        from models.deepdta.model import DeepDTA
+        args.lr = 1e-4
+        args.max_epoch = 500
+        encoder = DeepDTA().to(args.device)
+        args.model = PredModel(encoder, 192, num_classes=args.num_classes).to(args.device)
+  
+    elif args.arch_type == 'atom3d_cnn3d':
+        from models.atom3d.cnn3d import CNN3D_LBA
+        args.lr = 1e-4
+        args.max_epoch = 500
+        encoder = CNN3D_LBA().to(args.device)
+        args.model = PredModel(encoder, 512, num_classes=args.num_classes).to(args.device)
+     
+    elif args.arch_type == 'atom3d_gnn':
+        from models.atom3d.gnn import GNN_LBA
+        args.lr = 1e-4
+        args.max_epoch = 500
+        encoder = GNN_LBA().to(args.device)
+        args.model = PredModel(encoder, 512, num_classes=args.num_classes).to(args.device)
+     
+    elif args.arch_type == 'moltrans':
+        from models.moltrans.model import Moltrans
+        args.lr = 1e-4
+        args.max_epoch = 500
+        encoder = Moltrans().to(args.device)
+        args.model = PredModel(encoder, 78192, num_classes=args.num_classes).to(args.device)
+
+    elif args.arch_type == 'dg_model':
+        from models.dg_model.dg_model import DG_Network
+        args.lr = 1e-4
+        args.max_epoch = 200 
+        encoder = DG_Network(device=args.device).to(args.device)
+        if args.use_SFL:
+            args.model = PredModel(encoder, 128, num_classes=args.num_classes).to(args.device)
+        else:
+            args.model = encoder
+
     return args
   
-
-
       
 def load_data(args):
     dataset_info = {
@@ -44,7 +132,6 @@ def load_data(args):
         'qm9_homo': {'num_classes': 1, 'mean': -0.23997669940620675, 'std': 0.022131351371612196, 'path': './data/qm9/homo/'},
         'qm9_lumo': {'num_classes': 1, 'mean': 0.011123767412331478, 'std': 0.04693589458552092, 'path': './data/qm9/lumo/'},
         'qm9_gap': {'num_classes': 1, 'mean': 0.2511003712141017, 'std': 0.04751871040867132, 'path': './data/qm9/gap/'},
-       
     }
 
     if args.dataset in dataset_info:
@@ -53,5 +140,19 @@ def load_data(args):
         args.std = info.get('std', None)
         args.data_dir_path = info['path']
         args.num_classes = info.get('num_classes', None)
+    elif args.dataset.startswith('LBA_'):
+        args.num_classes = 1
+        base_path = './data/LBA/ood_x_y_xy/'
+        if args.arch_type in ['atom3d_gnn']:
+            args.data_dir_path = f'{base_path}Atom3d/gnn/split_{args.dataset[-2:]}_seq'
+        elif args.arch_type == 'atom3d_cnn3d':
+            args.data_dir_path = f'{base_path}Atom3d/cnn3d/split_{args.dataset[-2:]}_seq'
+        else:
+            args.data_dir_path = f'{base_path}Sequence/split_{args.dataset[-2:]}'
+    elif args.dataset == 'PPB':
+        args.data_dir_path = './data/PPB/'
+        args.num_classes = 1
+
+    
     return args
 

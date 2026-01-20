@@ -43,11 +43,11 @@ def train(args):
 
             output, output_feat = model(batch)
 
-            n_size, feat_size = output_feat.shape
+            n_size, _ = output_feat.shape
 
-            lam = torch.distributions.Beta(0.5, 0.5).sample((n_size, 1)).to(args.device)
+            lam = torch.distributions.Beta(0.5, 0.5).sample().item()
+            lam = torch.tensor(lam, dtype=output_feat.dtype, device=output_feat.device)
             index = torch.randperm(n_size).to(output_feat.device)
-
             mixed_feat = lam * output_feat + (1 - lam) * output_feat[index, :]
             mixed_gt_label = lam * label_true + (1 - lam) * label_true[index]
             mixed_output = model.mlp(mixed_feat)
@@ -66,7 +66,6 @@ def train(args):
             #-----------------------------------------------------------------------#
             mid_feat_dist_1 = output_feat - mid_feat_avg
             mid_label_dist_1 = label_true - mid_label_avg
-            # pseudo-YOOD data
             yood_beta_distribution = torch.distributions.Beta(args.yood_beta_1, args.yood_beta_2)
             yood_lam_fuse_1 = yood_beta_distribution.sample((n_size, 1)).to(args.device)
             yood_mid_feat_mix_1 = output_feat + yood_lam_fuse_1 * mid_feat_dist_1
@@ -86,9 +85,9 @@ def train(args):
             loss_yood_1 = F.mse_loss(yood_mid_output_mix_1, yood_mid_label_mix_1)
             loss_yood_2 = F.mse_loss(yood_mid_output_mix_2, yood_mid_label_mix_2)
 
-            loss_yood = args.lam_yood * loss_yood_1 + args.lam_xood * loss_yood_2 
-            loss = args.lam_id * loss_id + args.lam_mixup * loss_mixup + args.lam_yood * loss_yood
-            
+            loss_pood = args.lam_yood * loss_yood_1 + args.lam_xood * loss_yood_2 
+            loss_sood = loss_id + args.lam_mixup * loss_mixup
+            loss = (1 - args.lam_id) * loss_pood + args.lam_id * loss_sood
             loss.backward()
             optimizer.step()
             optimizer.zero_grad()
@@ -191,20 +190,17 @@ def build_argparse():
     parser.add_argument('--save_dir', default='./ckpt_PPB/SFL/', type=str)
     parser.add_argument('--seed', default=2025, type=int)
     parser.add_argument('--num_workers', default=7, type=int)
-    parser.add_argument('--device', default='cuda:3', type=str)
+    parser.add_argument('--device', default='cuda:2', type=str)
     parser.add_argument('--batch_size', default=16, type=int)
-    parser.add_argument('--lr', default=1e-4, type=float)
     parser.add_argument('--tmax', default=15, type=int)
     parser.add_argument('--weight_decay', default=1e-5, type=float)
-    parser.add_argument('--max_epoch', default=500, type=int)
     parser.add_argument("--max_bearable_epoch", type=int, default=50)
 
-    parser.add_argument("--lam_xood", type=float, default=0.5)  # 0.5
+    parser.add_argument("--lam_xood", type=float, default=0.5)  
     parser.add_argument("--lam_yood", type=float, default=0.5)
     parser.add_argument("--lam_mixup", type=float, default=1.0)
     parser.add_argument("--lam_id", type=float, default=1.0)
-
-    parser.add_argument("--lam_label_mix", type=float, default=0.5)   # 0.5
+    parser.add_argument("--lam_label_mix", type=float, default=0.5)   
 
     parser.add_argument("--xood_beta_1", type=float, default=0.5)
     parser.add_argument("--xood_beta_2", type=float, default=0.5)

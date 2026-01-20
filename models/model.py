@@ -1,4 +1,6 @@
+import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 class PredModel(nn.Module):
     def __init__(self, encoder, hidden_dim, num_classes=1, dropout_rate=0.1):

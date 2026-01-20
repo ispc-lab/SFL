@@ -48,7 +48,7 @@ def build_argparse():
                         help="unimol, unimol2_84M, schnet, egnn, dimenet++, visnet, attentive_fp")
     parser.add_argument('--dataset', default='qm7', type=str,
                         help="esol, freesolv, lipo, qm7")
-    parser.add_argument('--save_dir', default='./ckpt/', type=str)
+    parser.add_argument('--save_dir', default='./ckpt/SFL', type=str)
     parser.add_argument('--device', default='cuda:0', type=str)
     parser.add_argument('--batch_size', default=256, type=int)
     parser.add_argument('--num_workers', default=7, type=int)
