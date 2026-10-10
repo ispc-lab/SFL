@@ -1,4 +1,4 @@
-# Stretch to Generalize in Molecular Representation Learning with SFL
+# Stretching Features and Labels for Out-of-Distribution Generalization in Molecular Representation Learning
 
 ## Introduction
 Despite recent advances achieved by pretraining, existing molecular learning methods still struggle to generalize beyond the boundaries of the training distribution. Recent efforts to address this challenge have primarily focused on developing invariant or equivariant representations, or on applying input-level data augmentation to expand molecular contexts. However, several unresolved issues remain:
