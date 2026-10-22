@@ -108,7 +108,7 @@ Our paper is under review, if you find our code helpful, please cite
 ```bibtex
 @misc{SFL2026,
 title ={Stretch to Generalize in Molecular Representation Learning with SFL},
-author = {Qu, Sanqing and Zhang, Xudong and  Lu, Fan and Tang, Ruohui and Sun, Jianfeng and Wang, Jianming and Chen, 
+author = {Qu, Sanqing and Zhang, Xudong and  Wei He and Lu, Fan and Tang, Ruohui and Sun, Jianfeng and Wang, Jianming and Chen, 
 Jieneng and Zhang, Yanping and Knoll, Alois and Gao, Shaorong and Changjun, Jiang and Chen, Guang},
 year = {2026},
 publisher = {GitHub},
